@@ -4,8 +4,11 @@ from torch.utils.data import DataLoader
 import torch.optim as optim
 import torch.nn as nn
 import torch
+import os
 
-dataloader = DataLoader(OurDataset(), batch_size=1, shuffle=True, num_workers=0)
+curr_path = os.path.abspath(os.getcwd())
+
+dataloader = DataLoader(OurDataset(os.path.join(curr_path, 'data')), batch_size=1, shuffle=True, num_workers=0)
 model = RNN(1, 7, 5)
 
 criterion = nn.CrossEntropyLoss()

@@ -30,6 +30,7 @@ for epoch in range(30):
             # forward + backward + optimize
             loss = criterion(outputs, labels)
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 1)
             optimizer.step()
 
             # print statistics

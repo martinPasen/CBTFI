@@ -5,7 +5,7 @@ import os
 
 
 class OurDataset(Dataset):
-    def __init__(self, dir_path):
+    def __init__(self, dir_path, device):
         self.dir_path = dir_path
         _, _, file_names = next(os.walk(dir_path))
         data = []
@@ -35,8 +35,11 @@ class OurDataset(Dataset):
                 counter -= 1
                 if data[rand][1] - 1 == data[rand][2]:
                     labels.pop(rand_label)
-            self.input_data.append(torch.tensor(input_data))
-            self.targets.append(torch.tensor(target))
+            if len(input_data) == 1500:
+                self.input_data.append(input_data)
+                self.targets.append(target)
+        self.input_data = torch.tensor(self.input_data, device=device)
+        self.targets = torch.tensor(self.targets, device=device)
 
     def __len__(self):
         return len(self.input_data)

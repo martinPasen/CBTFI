@@ -4,8 +4,9 @@ import torch.nn.functional as F
 
 
 class RNN(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size):
+    def __init__(self, input_size, hidden_size, output_size, device):
         super(RNN, self).__init__()
+        self.device = device
 
         self.hidden_size = hidden_size
 
@@ -24,4 +25,4 @@ class RNN(nn.Module):
         return output, hidden
 
     def initiate_hidden_state(self):
-        return torch.zeros(self.hidden_size)
+        return torch.zeros(self.hidden_size, device=self.device)

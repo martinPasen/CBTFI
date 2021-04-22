@@ -6,10 +6,17 @@ import torch.nn as nn
 import torch
 import os
 
+if torch.cuda.is_available():
+  dev = "cuda:0"
+else:
+  dev = "cpu"
+device = torch.device(dev)
+
 curr_path = os.path.abspath(os.getcwd())
 
-dataloader = DataLoader(OurDataset(os.path.join(curr_path, 'data')), batch_size=1, shuffle=True, num_workers=0)
-model = RNN(1, 7, 5)
+dataloader = DataLoader(OurDataset(os.path.join(curr_path, 'data'), device), batch_size=1, shuffle=True, num_workers=0)
+model = RNN(1, 7, 5, device)
+model.to(device)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
@@ -21,7 +28,7 @@ for epoch in range(30):
         for inputs, labels in zip(batch_inputs, batch_labels):
             optimizer.zero_grad()
             hidden = model.initiate_hidden_state()
-            outputs = torch.zeros((len(inputs), 5))
+            outputs = torch.zeros((len(inputs), 5), device=device)
             for j, x in enumerate(inputs):
                 x = x.flatten()
                 output, hidden = model(x, hidden)

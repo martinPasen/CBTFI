@@ -17,12 +17,12 @@ class RNN(nn.Module):
         self.softmax = nn.LogSoftmax(dim=1)
 
     def forward(self, x, hidden_state):
-        x = torch.cat((x, hidden_state), 0)
+        x = torch.cat((x, hidden_state), 1)
         x = F.relu(self.linear1(x))
         x = F.relu(self.linear2(x))
         output = self.linear_output(x)
         hidden = self.linear_hidden(x)
         return output, hidden
 
-    def initiate_hidden_state(self):
-        return torch.zeros(self.hidden_size, device=self.device)
+    def initiate_hidden_state(self, batch_size):
+        return torch.zeros((batch_size, self.hidden_size), device=self.device)

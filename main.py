@@ -1,14 +1,15 @@
 from model import RNN
-from databes import OurDataset
+from databes import OurDataset, INPUT_SIZE
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 import torch.optim as optim
 import torch.nn as nn
 import torch
 import os
+from transforms import To256
 
 
-def run(model, dataloader, criterion, optimizer = None):
+def run(model, dataloader, criterion, optimizer=None):
     running_loss = 0.0
     if optimizer is not None:
         model.train()
@@ -24,9 +25,9 @@ def run(model, dataloader, criterion, optimizer = None):
         if optimizer is not None:
             optimizer.zero_grad()
         hidden = model.initiate_hidden_state(batch_size)
-        outputs = torch.zeros((1500, batch_size, 5), device=device)
+        outputs = torch.zeros((INPUT_SIZE, batch_size, 5), device=device)
         for j, x in enumerate(transposed_inputs):
-            output, hidden = model(x.view(batch_size, 1), hidden)
+            output, hidden = model(x.view(batch_size, 256), hidden)
             outputs[j] = output
 
         # forward + backward + optimize
@@ -58,7 +59,7 @@ device = torch.device(dev)
 curr_path = os.path.abspath(os.getcwd())
 
 batch_size = 128
-dataset = OurDataset(os.path.join(curr_path, 'data'), device)
+dataset = OurDataset(os.path.join(curr_path, 'data'), device, To256())
 training_set = torch.utils.data.Subset(dataset, (range(0, (len(dataset) * 4) // 5)))
 validation_set = torch.utils.data.Subset(dataset, (range((len(dataset) * 4) // 5, len(dataset))))
 
@@ -68,7 +69,7 @@ training_dataloader = DataLoader(training_set, batch_size=batch_size, shuffle=Tr
 validation_dataloader = DataLoader(validation_set, batch_size=batch_size, shuffle=True,
                                    num_workers=0, drop_last=True)
 
-model = RNN(1, 7, 5, device)
+model = RNN(256, 7, 5, device)
 model.to(device)
 
 criterion = nn.CrossEntropyLoss()
@@ -78,7 +79,7 @@ running_losses = []
 valid_losses = []
 acuracy = []
 
-for epoch in range(4):
+for epoch in range(5):
     print('Training')
     run(model, training_dataloader, criterion, optimizer)
 
@@ -90,6 +91,9 @@ for epoch in range(4):
     loss, acc = run(model, validation_dataloader, criterion)
     valid_losses.append(loss)
     acuracy.append(acc)
+    torch.save(model, 'model.pt')
+    torch.save(criterion, 'criterion.pt')
+    torch.save(optimizer, 'optimizer.pt')
 plt.figure(1)
 plt.plot(running_losses, label='Running loss')
 plt.plot(valid_losses, label='Validation loss')
